@@ -97,12 +97,19 @@ function addZerro(num) {
    }
 }
 
+function City(name) {
+   this.name = name;
+   this.isLiked = true;
+}
+
 function createLikedList() {
    UI_ELEM.NOWS__LIKE.addEventListener('click', function () {
       UI_ELEM.NOWS__LIKE.setAttribute('src', './images/liked.svg');
 
+      const newLikedCity = new City(weatherData.cityName);
+
       const favoriteCities = storage.getFavoriteCities();
-      if (!favoriteCities.includes(weatherData.cityName)) {
+      if (!favoriteCities.has(newLikedCity.name)) {
          const newCityElem = addNewCity();
          changeLocalStorage(newCityElem);
       }
@@ -122,7 +129,7 @@ function saveCities(cities) {
 function changeLocalStorage(newCity) {
    try {
       const favoriteCities = storage.getFavoriteCities();
-      favoriteCities.push(newCity);
+      favoriteCities.add(newCity);
       storage.saveFavoriteCities(favoriteCities);
    } catch (error) {
       alert('out of local storage space!');
@@ -134,7 +141,7 @@ function addNewCity() {
       const newCityElement = createNewElement(weatherData.cityName);
       UI_ELEM.LOCATION_LIST.append(newCityElement);
    }
-   return newCityElement
+   return weatherData.cityName
 }
 
 function createNewElement(city) {
@@ -174,7 +181,7 @@ function removeCity(button) {
 function filterCities(button) {
    const favoriteCities = storage.getFavoriteCities();
    const deletedCity = button.parentElement.textContent.trim();
-   const FILTERED_CITIES = favoriteCities.filter(city => city !== deletedCity);
+   const FILTERED_CITIES = [...favoriteCities].filter(city => city !== deletedCity);
    return FILTERED_CITIES
 }
 
@@ -188,10 +195,10 @@ async function fetchCityForecast(cityName) {
    const url = `${SERVER_URL_FORECAST}?q=${cityName}&appid=${API_KEY}&units=metric`;
 
    try {
-      let response = await fetch(url);
-      let statusResult = await status(response);
-      let data = await json(statusResult);
-      let forecastList = data.list.slice(0, 20);
+      const response = await fetch(url);
+      const statusResult = await status(response);
+      const data = await json(statusResult);
+      const forecastList = data.list.slice(0, 20);
       createTables(forecastList);
 
    } catch (error) {
